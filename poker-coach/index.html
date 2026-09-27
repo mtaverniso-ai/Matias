@@ -51,7 +51,7 @@
           <label>Stack (BB)<input id="ctx-stack" type="number" min="0" inputmode="decimal" placeholder="100"></label>
           <label>Formato
             <select id="ctx-formato">
-              <option>Cash 6-max</option><option>Cash full ring</option>
+              <option>Cash en vivo (mesa completa)</option><option>Cash 6-max</option>
               <option>Torneo (MTT)</option><option>Sit & Go</option><option>Heads-up</option>
             </select>
           </label>
@@ -89,17 +89,20 @@
 
     <!-- ESTRATEGIA -->
     <section id="tab-estrategia" class="panel">
-      <p>Escribí acá lo que vas aprendiendo y definiendo en tus clases de Jake Poker: rangos, reglas,
-         sizings, ajustes contra tipos de rivales. Claude va a basar todas las sugerencias en esto,
-         y cuando algo no esté cubierto te lo va a marcar.</p>
+      <p>Lo que vas aprendiendo y definiendo en tus clases de Jake Poker: rangos, reglas,
+         sizings, ajustes contra tipos de rivales. Claude basa todas las sugerencias en esto,
+         y cuando algo no esté cubierto te lo marca. Ya viene cargado con tu Excel (Poker_v4);
+         editalo o importá una versión nueva del Excel cuando avances en las clases.</p>
       <textarea id="estrategia" rows="22" spellcheck="false"></textarea>
       <div class="fila botones">
         <button id="btn-guardar-estrategia" class="primario">💾 Guardar</button>
-        <button id="btn-plantilla">↺ Cargar plantilla de ejemplo</button>
+        <button id="btn-plantilla">↺ Restaurar estrategia de mis clases</button>
         <button id="btn-exportar-estrategia">⬇️ Exportar</button>
-        <label class="archivo">⬆️ Importar<input id="input-estrategia" type="file" accept=".txt,.md,text/plain" hidden></label>
+        <label class="archivo">⬆️ Importar Excel o texto<input id="input-estrategia" type="file" accept=".xlsx,.xls,.txt,.md,text/plain" hidden></label>
       </div>
       <div id="estado-estrategia" class="estado"></div>
+      <p class="nota">Al importar un Excel se lee el texto de todas las hojas. Las imágenes (por ejemplo,
+        grillas de rangos pegadas como captura) no se leen: pasalas a texto en el cuadro de arriba.</p>
     </section>
 
     <!-- HISTORIAL -->

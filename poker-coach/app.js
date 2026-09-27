@@ -58,7 +58,7 @@ $("btn-guardar-estrategia").addEventListener("click", () => {
   setEstado($("estado-estrategia"), ok ? "Estrategia guardada." : "No se pudo guardar.", !ok);
 });
 $("btn-plantilla").addEventListener("click", () => {
-  if (confirm("¿Reemplazar tu texto actual por la plantilla de ejemplo?")) {
+  if (confirm("¿Reemplazar tu texto actual por la estrategia de tus clases (Poker_v4)?")) {
     $("estrategia").value = PLANTILLA_ESTRATEGIA;
   }
 });
@@ -67,10 +67,28 @@ $("btn-exportar-estrategia").addEventListener("click", () =>
 $("input-estrategia").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  $("estrategia").value = await file.text();
-  setEstado($("estado-estrategia"), `Importado "${file.name}". Tocá Guardar para conservarlo.`);
   e.target.value = "";
+  try {
+    $("estrategia").value = /\.xlsx?$/i.test(file.name) ? await excelATexto(file) : await file.text();
+    setEstado($("estado-estrategia"), `Importado "${file.name}". Revisalo y tocá Guardar para conservarlo.`);
+  } catch (err) {
+    setEstado($("estado-estrategia"), `No se pudo leer "${file.name}": ${err.message}`, true);
+  }
 });
+
+// Convierte todas las hojas de un Excel en texto: una sección por hoja, una línea por fila.
+async function excelATexto(file) {
+  const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+  const wb = XLSX.read(await file.arrayBuffer());
+  const hojas = wb.SheetNames.map((nombre) => {
+    const filas = XLSX.utils.sheet_to_json(wb.Sheets[nombre], { header: 1, raw: false, defval: "" })
+      .map((fila) => fila.map((c) => String(c).trim()).filter(Boolean).join(" | "))
+      .filter(Boolean);
+    return filas.length ? `## ${nombre}\n${filas.join("\n")}` : "";
+  }).filter(Boolean);
+  if (!hojas.length) throw new Error("el archivo no tiene texto");
+  return `# MI ESTRATEGIA (importada de ${file.name})\n\n${hojas.join("\n\n")}`;
+}
 
 function descargar(nombre, contenido, tipo) {
   const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
@@ -250,7 +268,8 @@ async function analizar() {
       effort: leer(KEYS.effort, "low"),
       format: { type: "json_schema", schema: SCHEMA },
     },
-    system: promptSistema(estrategia),
+    // La estrategia se repite en cada análisis: cachearla abarata y acelera los pedidos siguientes.
+    system: [{ type: "text", text: promptSistema(estrategia), cache_control: { type: "ephemeral" } }],
     messages: [{
       role: "user",
       content: [
