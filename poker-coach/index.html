@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f3d2e">
+  <title>Poker Coach</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>♠ Poker Coach</h1>
+    <nav>
+      <button class="tab active" data-tab="mesa">Mesa</button>
+      <button class="tab" data-tab="estrategia">Mi estrategia</button>
+      <button class="tab" data-tab="historial">Historial</button>
+      <button class="tab" data-tab="ajustes">Ajustes</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- MESA -->
+    <section id="tab-mesa" class="panel active">
+      <p class="aviso">
+        Modo estudio: usalo para práctica, juego con amigos que estén de acuerdo o para revisar manos.
+        La asistencia en tiempo real está prohibida en salas online de dinero real y en casinos.
+      </p>
+
+      <div class="camara">
+        <video id="video" autoplay playsinline muted></video>
+        <img id="foto" alt="Última captura" hidden>
+        <div id="camara-vacia" class="camara-vacia">La cámara está apagada</div>
+      </div>
+
+      <div class="fila botones">
+        <button id="btn-camara">📷 Encender cámara</button>
+        <button id="btn-girar" disabled>🔄 Girar</button>
+        <label class="archivo">🖼️ Subir foto<input id="input-foto" type="file" accept="image/*" hidden></label>
+      </div>
+
+      <details class="contexto" open>
+        <summary>Contexto de la mano (opcional; ayuda a Claude)</summary>
+        <div class="grid">
+          <label>Posición
+            <select id="ctx-posicion">
+              <option value="">¿?</option>
+              <option>UTG</option><option>UTG+1</option><option>MP</option><option>LJ</option>
+              <option>HJ</option><option>CO</option><option>BTN</option><option>SB</option><option>BB</option>
+            </select>
+          </label>
+          <label>Stack (BB)<input id="ctx-stack" type="number" min="0" inputmode="decimal" placeholder="100"></label>
+          <label>Formato
+            <select id="ctx-formato">
+              <option>Cash 6-max</option><option>Cash full ring</option>
+              <option>Torneo (MTT)</option><option>Sit & Go</option><option>Heads-up</option>
+            </select>
+          </label>
+          <label class="ancho">Acción previa / notas de la mano
+            <input id="ctx-accion" type="text" placeholder="Ej: UTG abre 2.5bb, CO paga, yo en BTN">
+          </label>
+        </div>
+      </details>
+
+      <div class="fila botones">
+        <button id="btn-analizar" class="primario">🧠 ¿Qué hago?</button>
+        <label class="auto"><input id="chk-auto" type="checkbox"> Auto cada
+          <input id="auto-seg" type="number" min="5" value="15" inputmode="numeric"> s</label>
+      </div>
+
+      <div id="estado" class="estado"></div>
+
+      <article id="resultado" class="resultado" hidden>
+        <div class="accion" id="r-accion"></div>
+        <div class="mano">
+          <div><span class="etq">Mis cartas</span><span id="r-cartas"></span></div>
+          <div><span class="etq">Board</span><span id="r-board"></span></div>
+          <div><span class="etq">Calle</span><span id="r-calle"></span></div>
+          <div><span class="etq">Confianza en la lectura</span><span id="r-confianza"></span></div>
+        </div>
+        <h3>Por qué</h3>
+        <p id="r-razon"></p>
+        <h3>Regla de tu estrategia que aplica</h3>
+        <p id="r-regla"></p>
+        <h3>Para estudiar después</h3>
+        <p id="r-estudio"></p>
+        <p class="nota" id="r-lectura"></p>
+      </article>
+    </section>
+
+    <!-- ESTRATEGIA -->
+    <section id="tab-estrategia" class="panel">
+      <p>Escribí acá lo que vas aprendiendo y definiendo en tus clases de Jake Poker: rangos, reglas,
+         sizings, ajustes contra tipos de rivales. Claude va a basar todas las sugerencias en esto,
+         y cuando algo no esté cubierto te lo va a marcar.</p>
+      <textarea id="estrategia" rows="22" spellcheck="false"></textarea>
+      <div class="fila botones">
+        <button id="btn-guardar-estrategia" class="primario">💾 Guardar</button>
+        <button id="btn-plantilla">↺ Cargar plantilla de ejemplo</button>
+        <button id="btn-exportar-estrategia">⬇️ Exportar</button>
+        <label class="archivo">⬆️ Importar<input id="input-estrategia" type="file" accept=".txt,.md,text/plain" hidden></label>
+      </div>
+      <div id="estado-estrategia" class="estado"></div>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="tab-historial" class="panel">
+      <p>Cada análisis queda guardado en este dispositivo para que lo repases con tu coach.</p>
+      <div class="fila botones">
+        <button id="btn-exportar-historial">⬇️ Exportar historial</button>
+        <button id="btn-borrar-historial" class="peligro">🗑️ Borrar historial</button>
+      </div>
+      <ol id="lista-historial" class="historial"></ol>
+    </section>
+
+    <!-- AJUSTES -->
+    <section id="tab-ajustes" class="panel">
+      <label>API key de Anthropic
+        <input id="api-key" type="password" autocomplete="off" placeholder="sk-ant-...">
+      </label>
+      <p class="nota">Se guarda solo en este navegador y se envía únicamente a la API de Anthropic.
+        Conseguila en <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+      <label>Modelo
+        <select id="modelo">
+          <option value="claude-opus-5">Claude Opus 5 (mejor análisis)</option>
+          <option value="claude-sonnet-5">Claude Sonnet 5 (más rápido y barato)</option>
+        </select>
+      </label>
+      <label>Profundidad de análisis
+        <select id="effort">
+          <option value="low">Rápida</option>
+          <option value="medium">Media</option>
+          <option value="high">Profunda</option>
+        </select>
+      </label>
+      <button id="btn-guardar-ajustes" class="primario">💾 Guardar ajustes</button>
+      <div id="estado-ajustes" class="estado"></div>
+    </section>
+  </main>
+
+  <canvas id="canvas" hidden></canvas>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
