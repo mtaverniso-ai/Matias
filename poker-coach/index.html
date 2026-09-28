@@ -39,16 +39,17 @@
       </div>
 
       <details class="contexto" open>
-        <summary>Contexto de la mano (opcional; ayuda a Claude)</summary>
+        <summary>Contexto de la mano (opcional: lo que dejes vacío, Claude lo detecta de la foto)</summary>
         <div class="grid">
           <label>Posición
             <select id="ctx-posicion">
-              <option value="">¿?</option>
+              <option value="">🔍 Detectar</option>
               <option>UTG</option><option>UTG+1</option><option>MP</option><option>LJ</option>
               <option>HJ</option><option>CO</option><option>BTN</option><option>SB</option><option>BB</option>
             </select>
           </label>
-          <label>Stack (BB)<input id="ctx-stack" type="number" min="0" inputmode="decimal" placeholder="100"></label>
+          <label>Stack (BB)<input id="ctx-stack" type="number" min="0" inputmode="decimal" placeholder="🔍 Detectar"></label>
+          <label>Ciega grande ($)<input id="ctx-bb" type="number" min="0" step="any" inputmode="decimal" placeholder="Ej: 1"></label>
           <label>Formato
             <select id="ctx-formato">
               <option>Cash en vivo (mesa completa)</option><option>Cash 6-max</option>
@@ -56,7 +57,7 @@
             </select>
           </label>
           <label class="ancho">Acción previa / notas de la mano
-            <input id="ctx-accion" type="text" placeholder="Ej: UTG abre 2.5bb, CO paga, yo en BTN">
+            <input id="ctx-accion" type="text" placeholder="Ej: UTG abre a 4bb, CO paga">
           </label>
         </div>
       </details>
@@ -72,6 +73,8 @@
       <article id="resultado" class="resultado" hidden>
         <div class="accion" id="r-accion"></div>
         <div class="mano">
+          <div><span class="etq">Mi posición</span><span id="r-posicion"></span></div>
+          <div><span class="etq">Mi stack</span><span id="r-stack"></span></div>
           <div><span class="etq">Mis cartas</span><span id="r-cartas"></span></div>
           <div><span class="etq">Board</span><span id="r-board"></span></div>
           <div><span class="etq">Calle</span><span id="r-calle"></span></div>
@@ -118,10 +121,12 @@
     <!-- AJUSTES -->
     <section id="tab-ajustes" class="panel">
       <label>API key de Anthropic
-        <input id="api-key" type="password" autocomplete="off" placeholder="sk-ant-...">
+        <input id="api-key" type="password" autocomplete="off" placeholder="sk-ant-..." spellcheck="false">
       </label>
       <p class="nota">Se guarda solo en este navegador y se envía únicamente a la API de Anthropic.
-        Conseguila en <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+        Se guarda sola apenas la pegás. Conseguila en
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com → API Keys</a>
+        (necesitás crédito cargado en Billing).</p>
       <label>Modelo
         <select id="modelo">
           <option value="claude-opus-5">Claude Opus 5 (mejor análisis)</option>

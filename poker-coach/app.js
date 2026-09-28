@@ -10,6 +10,8 @@ const KEYS = {
   effort: "pc.effort",
   estrategia: "pc.estrategia",
   historial: "pc.historial",
+  ciega: "pc.ciega",
+  formato: "pc.formato",
 };
 const MAX_HISTORIAL = 100;
 
@@ -42,6 +44,22 @@ document.querySelectorAll(".tab").forEach((btn) => {
 $("api-key").value = leer(KEYS.apiKey, "");
 $("modelo").value = leer(KEYS.modelo, "claude-opus-5");
 $("effort").value = leer(KEYS.effort, "low");
+
+// La API key se guarda sola al pegarla o escribirla, para que no se pierda por no tocar "Guardar".
+$("api-key").addEventListener("input", () => {
+  const ok = guardar(KEYS.apiKey, $("api-key").value.trim());
+  setEstado($("estado-ajustes"), ok ? "API key guardada." : "No se pudo guardar (¿navegación privada?).", !ok);
+});
+
+function irATab(nombre) {
+  document.querySelector(`.tab[data-tab="${nombre}"]`).click();
+}
+
+// La ciega y el formato cambian poco: se recuerdan entre sesiones.
+$("ctx-bb").value = leer(KEYS.ciega, "");
+$("ctx-formato").value = leer(KEYS.formato, $("ctx-formato").value);
+$("ctx-bb").addEventListener("change", () => guardar(KEYS.ciega, $("ctx-bb").value));
+$("ctx-formato").addEventListener("change", () => guardar(KEYS.formato, $("ctx-formato").value));
 
 $("btn-guardar-ajustes").addEventListener("click", () => {
   const ok = guardar(KEYS.apiKey, $("api-key").value.trim())
@@ -190,10 +208,13 @@ function miniatura(dataUrl) {
 const SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["lectura_ok", "mis_cartas", "board", "calle", "confianza_lectura",
+  required: ["lectura_ok", "posicion", "stack", "como_detecte", "mis_cartas", "board", "calle", "confianza_lectura",
     "accion", "sizing", "razonamiento", "regla_aplicada", "para_estudiar", "que_se_ve"],
   properties: {
     lectura_ok: { type: "boolean", description: "true si se pudieron leer mis cartas con claridad" },
+    posicion: { type: "string", enum: ["UTG", "UTG+1", "MP", "LJ", "HJ", "CO", "BTN", "SB", "BB", "desconocida"] },
+    stack: { type: "string", description: "Mi stack efectivo, ej. '85 BB ($85)' o '≈120 BB (estimado por fichas)'. 'desconocido' si no se puede." },
+    como_detecte: { type: "string", description: "Cómo determiné posición y stack: si los dio el alumno, o qué vi en la imagen (botón del dealer, asientos contados, fichas/número)." },
     mis_cartas: { type: "string", description: "Ej: 'A♠ K♥'. Vacío si no se ven." },
     board: { type: "string", description: "Ej: 'Q♦ 7♣ 2♠'. Vacío si es preflop." },
     calle: { type: "string", enum: ["preflop", "flop", "turn", "river", "desconocida"] },
@@ -212,8 +233,21 @@ function promptSistema(estrategia) {
 Recibís una foto o captura de su mesa (en vivo o pantalla) y respondés en español rioplatense.
 
 Tu trabajo:
-1. Leer con cuidado la imagen: cartas propias, board, pozo, stacks, apuestas y posición si se ven.
+1. Leer con cuidado la imagen: cartas propias, board, pozo, stacks y apuestas.
    Si una carta no se lee bien, decilo y bajá la confianza; nunca inventes cartas.
+   Si el alumno te da posición o stack, usá esos datos: mandan sobre lo que veas.
+   Si no, DETECTALOS de la imagen:
+   - Quién es el alumno: en una foto en vivo, es quien sostiene la cámara (el asiento más cercano,
+     abajo de la imagen, donde están las cartas propias). En una captura de pantalla online, es el
+     asiento con las cartas visibles (casi siempre abajo al centro).
+   - Posición: ubicá el botón del dealer (ficha "D"). Contá los jugadores con cartas al inicio de la mano
+     en sentido horario desde el botón: BTN, SB, BB, y después UTG, UTG+1, MP, LJ, HJ, CO (el CO es el
+     asiento a la derecha del BTN). Con menos jugadores se eliminan primero UTG+1, después LJ, después HJ.
+     Si no ves el botón o no podés contar los asientos, devolvé "desconocida" y pedí el dato.
+   - Stack: leé el número si aparece en pantalla; en vivo, estimalo por las pilas de fichas del alumno
+     (colores y altura) y marcalo como estimado. Pasalo a BB con la ciega grande que te dé el alumno
+     (o la que se vea en la mesa). Si no se puede, "desconocido".
+   - Una posición o un stack dudosos pueden cambiar la acción: si pesan en la decisión, bajá la confianza.
 2. Recomendar UNA acción siguiendo, ante todo, la estrategia del alumno que está abajo.
    Si su estrategia no cubre el spot, usá teoría estándar sólida y aclaralo en "regla_aplicada"
    empezando con "No cubierto en tu estrategia:".
@@ -229,12 +263,13 @@ function contextoMano() {
   const partes = [
     ["Posición", $("ctx-posicion").value],
     ["Stack", $("ctx-stack").value && `${$("ctx-stack").value} BB`],
+    ["Ciega grande", $("ctx-bb").value && `$${$("ctx-bb").value}`],
     ["Formato", $("ctx-formato").value],
     ["Acción / notas", $("ctx-accion").value.trim()],
   ].filter(([, v]) => v);
   return partes.length
     ? "Contexto que da el alumno:\n" + partes.map(([k, v]) => `- ${k}: ${v}`).join("\n")
-    : "El alumno no dio contexto extra; deducí lo que puedas de la imagen.";
+    : "El alumno no dio contexto extra; detectá posición, stack y todo lo que puedas de la imagen.";
 }
 
 let enCurso = false;
@@ -243,7 +278,9 @@ async function analizar() {
   if (enCurso) return;
   const apiKey = leer(KEYS.apiKey, "");
   if (!apiKey) {
-    setEstado($("estado"), "Falta tu API key: cargala en Ajustes.", true);
+    irATab("ajustes");
+    $("api-key").focus();
+    setEstado($("estado-ajustes"), "Pegá acá tu API key de Anthropic (empieza con sk-ant-) y volvé a Mesa.", true);
     return;
   }
   const dataUrl = await capturar();
@@ -318,6 +355,9 @@ function mensajeError(err) {
 function mostrarResultado(r) {
   $("resultado").hidden = false;
   $("r-accion").textContent = r.sizing ? `${r.accion} · ${r.sizing}` : r.accion;
+  const manual = { pos: $("ctx-posicion").value, stack: $("ctx-stack").value };
+  $("r-posicion").textContent = manual.pos ? r.posicion : `${r.posicion} 🔍`;
+  $("r-stack").textContent = manual.stack ? r.stack : `${r.stack} 🔍`;
   $("r-cartas").textContent = r.mis_cartas || "—";
   $("r-board").textContent = r.board || "—";
   $("r-calle").textContent = r.calle;
@@ -325,7 +365,7 @@ function mostrarResultado(r) {
   $("r-razon").textContent = r.razonamiento;
   $("r-regla").textContent = r.regla_aplicada;
   $("r-estudio").textContent = r.para_estudiar;
-  $("r-lectura").textContent = `Lo que vi: ${r.que_se_ve}`;
+  $("r-lectura").textContent = `Lo que vi: ${r.que_se_ve} · 🔍 ${r.como_detecte}`;
   $("resultado").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -381,7 +421,8 @@ function renderHistorial() {
     meta.className = "meta";
     meta.textContent = new Date(h.fecha).toLocaleString();
     const titulo = document.createElement("strong");
-    titulo.textContent = `${r.mis_cartas || "?"} ${r.board ? "| " + r.board : ""} → ${r.accion}${r.sizing ? " " + r.sizing : ""}`;
+    const donde = r.posicion ? `${r.posicion} (${r.stack}) · ` : "";
+    titulo.textContent = `${donde}${r.mis_cartas || "?"} ${r.board ? "| " + r.board : ""} → ${r.accion}${r.sizing ? " " + r.sizing : ""}`;
     const razon = document.createElement("p");
     razon.textContent = r.razonamiento;
     const regla = document.createElement("p");
