@@ -10,7 +10,8 @@ qué hacer **según tu propia estrategia** — lo que vas aprendiendo en tus cla
 ## Cómo funciona
 
 1. **Mi estrategia**: ya viene cargada con tus apuntes de `Poker_v4.xlsx` (pre-flop, tipos de rivales,
-   método post-flop y S1 IP en boards ofensivos y defensivos). Podés editarla o importar una versión
+   método post-flop y S1 IP en boards ofensivos y defensivos) y los rangos
+   por posición de tu artifact "Preflop Trainer". Podés editarla o importar una versión
    nueva del Excel con **Importar Excel o texto** (se lee el texto de todas las hojas; las imágenes no).
 2. **Mesa**: encendés la cámara (o subís una captura) y tocás **¿Qué hago?**.
 3. Claude lee cartas, board, pozo y stacks de la imagen, y devuelve:
@@ -38,7 +39,7 @@ La cámara del navegador exige **https** (o `localhost`):
 |---|---|
 | `poker-coach/index.html` | Interfaz (pestañas Mesa, Mi estrategia, Historial, Ajustes) |
 | `poker-coach/app.js` | Cámara, llamada a Claude (visión + salida JSON estructurada), historial |
-| `poker-coach/estrategia-plantilla.js` | Estrategia inicial armada desde `Poker_v4.xlsx` |
+| `poker-coach/estrategia-plantilla.js` | Estrategia inicial armada desde `Poker_v4.xlsx` y el Preflop Trainer |
 | `poker-coach/style.css` | Estilos |
 
 Modelos: Claude Opus 5 (por defecto, mejor análisis) o Claude Sonnet 5 (más rápido y barato),

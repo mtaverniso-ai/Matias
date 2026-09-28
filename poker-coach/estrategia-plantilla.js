@@ -1,6 +1,7 @@
-// Estrategia inicial, armada a partir de "Poker_v4.xlsx" (apuntes de las clases de Jake Poker).
+// Estrategia inicial, armada a partir de "Poker_v4.xlsx" (apuntes de las clases de Jake Poker)
+// y de los rangos del artifact "Preflop Trainer".
 // Se puede editar desde la pestaña "Mi estrategia" de la app.
-export const PLANTILLA_ESTRATEGIA = `# MI ESTRATEGIA — clases de Jake Poker (fuente: Poker_v4.xlsx)
+export const PLANTILLA_ESTRATEGIA = `# MI ESTRATEGIA — clases de Jake Poker (fuentes: Poker_v4.xlsx + Preflop Trainer)
 
 ## Objetivo y táctica
 - Objetivo: ser un jugador EN VIVO ganador, consistente y sólido, con un enfoque de bajo riesgo, simple y fácil de aplicar.
@@ -21,13 +22,72 @@ Cash EN VIVO, mesa completa (9–10 jugadores). Posiciones: UTG, UTG+1, MP, LJ, 
 - 4bet/5bet: 2.2x–3x. Ej.: abro a 3, me 3betean a 9 → 4bet a ~20.
 - Limpear en vez de subir, en general, está MAL.
 
-## PRE-FLOP — rangos
+## PRE-FLOP — rangos (fuente: mi Preflop Trainer; la mano que no figura en una línea = FOLD en ese spot)
 - Premium (siempre subir y resubir): AA, KK, QQ, AK.
-- Rango de 4bet/5bet (4.5% de las manos, vs loose): TT+, AK, AQ (suited y offsuit). SIN faroles en el 4bet: los rivales no hacen 3bet de farol.
-- SB — cold call vs 1 OR sin callers (solo si el BB no es muy agresivo): 22–99, A2s–A9s, KJs, KTs, QJs, QTs, JTs.
-- SB — cold call vs 1 OR + 1 caller, o overlimp: 22–99, A2s–A9s, KJs, KTs, K9s, QJs, QTs, Q9s, JTs, J9s, T9s, 98s, 87s, 76s, 65s, ATo, AJo, KTo, KJo, QTo, QJo, JTo.
+- 4bet/5bet por defecto: QQ+, AK. Vs rivales LOOSE (slide de la clase, 4.5%): ampliar a TT+, AK, AQ. SIN faroles en el 4bet: los rivales no hacen 3bet de farol.
+- Pagar un 3bet: pares necesitan ~10x el stack efectivo del raise y Ax ~15x (odds implícitas).
+- MP (mesa de 9-10): no tiene rango propio cargado; usar el de UTG+1.
 - En SB, si todos foldean antes: probablemente conviene cambiar de mesa (no juegan, no hay de dónde sacar y el rake pesa).
-- Rangos de open raise por posición: (COMPLETAR — "ver la app de Claude"; el link jakepoker.vercel.app está MAL según mis notas, basarse en la clase).
+- Coldcall desde SB solo si el BB no es muy agresivo.
+
+### UTG
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, JTs, AKo, AQo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+- Nota: Call vs 3bet: pares necesitan 10x stack, Ax necesitan 15x stack para pagar.
+
+### UTG+1
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, AKo, AQo, AJo, KQo
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, AKo, AQo, AJo, KQo
+- 3bet — Abrió UTG: AA, KK, QQ, JJ, TT, AKs, AQs, KQs, AKo, AQo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+
+### LJ
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, 66, AKs, AQs, AJs, ATs, A9s, A5s, KQs, KJs, KTs, QJs, QTs, JTs, AKo, AQo, AJo, KQo
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, AKo, AQo, AJo, KQo
+- 3bet — Abrió UTG o UTG+1: AA, KK, QQ, JJ, TT, AKs, AQs, KQs, AKo, AQo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+
+### HJ
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, 66, AKs, AQs, AJs, ATs, A9s, A5s, KQs, KJs, KTs, QJs, QTs, JTs, T9s, AKo, AQo, AJo, KQo, KJo
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, T9s, AKo, AQo, AJo, ATo, KQo, KJo, KTo, QJo, QTo, JTo
+- 3bet — Abrió UTG, UTG+1 o LJ: AA, KK, QQ, JJ, TT, AKs, AQs, KQs, AKo, AQo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+
+### CO
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, 66, 55, 44, 33, 22, AKs, AQs, AJs, ATs, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KQs, KJs, KTs, K9s, QJs, QTs, Q9s, JTs, J9s, T9s, 98s, 87s, 76s, 65s, AKo, AQo, AJo, ATo, KQo, KJo, KTo, QJo, QTo, JTo
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, T9s, AKo, AQo, AJo, ATo, KQo, KJo, KTo, QJo, QTo, JTo
+- 3bet — Abrió UTG, UTG+1, LJ o HJ: AA, KK, QQ, JJ, TT, AKs, AQs, KQs, AKo, AQo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+
+### BTN
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, 66, 55, 44, 33, 22, AKs, AQs, AJs, ATs, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KQs, KJs, KTs, K9s, K8s, K7s, K6s, K5s, QJs, QTs, Q9s, Q8s, JTs, J9s, J8s, T9s, T8s, 98s, 97s, 87s, 86s, 76s, 75s, 65s, 64s, 54s, AKo, AQo, AJo, ATo, A9o, A8o, A7o, A6o, A5o, KQo, KJo, KTo, K9o, QJo, QTo, JTo, T9o
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, T9s, AKo, AQo, AJo, ATo, KQo, KJo, KTo, QJo, QTo, JTo
+- Overlimp (hay limpers; si no está en ROL): 66, 55, 44, 33, 22, A8s, A7s, A6s, A5s, A4s, A3s, A2s
+- 3bet — Abrió UTG, UTG+1, LJ o HJ: AA, KK, QQ, JJ, TT, AKs, AQs, KQs, AKo, AQo
+- 3bet vs open de CO — Abrió CO: AA, KK, QQ, JJ, TT, AKs, AQs, AJs, ATs, KQs, AKo, AQo, AJo
+- Overcall (open + caller): 99, 88, 77, 66, 55, 44, 33, 22, AJs, ATs, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs, KQs, QJs, JTs, AQo
+
+### SB
+- Open raise (nadie entró): AA, KK, QQ, JJ, TT, 99, 88, 77, 66, 55, 44, 33, 22, AKs, AQs, AJs, ATs, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KQs, KJs, KTs, K9s, QJs, QTs, Q9s, JTs, J9s, T9s, 98s, 87s, 76s, 65s, AKo, AQo, AJo, ATo, KQo, KJo, KTo, QJo, QTo, JTo
+- ROL (hay limpers): AA, KK, QQ, JJ, TT, 99, 88, 77, AKs, AQs, AJs, ATs, A9s, KQs, KJs, KTs, QJs, QTs, JTs, AKo, AQo, AJo, KQo
+- Overlimp (hay limpers; si no está en ROL): 66, 55, 44, 33, 22, A8s, A7s, A6s, A5s, A4s, A3s, A2s
+- 3bet — Abrió UTG, UTG+1, LJ, HJ, CO o BTN: AA, KK, QQ, JJ, TT, AKs, AQs, AJs, ATs, KQs, AKo, AQo, KQo
+- Coldcall vs 1 open (sin callers): 99, 88, 77, 66, 55, 44, 33, 22, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KJs, KTs, QJs, QTs, JTs
+- Coldcall vs open + 1 caller: 99, 88, 77, 66, 55, 44, 33, 22, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KJs, KTs, K9s, QJs, QTs, Q9s, JTs, J9s, T9s, 98s, 87s, 76s, 65s, AJo, ATo, KJo, KTo, QJo, QTo, JTo
+- 4bet/5bet (abrí y me 3betearon): AA, KK, QQ, AKs, AKo
+- Pagar el 3bet (abrí y me 3betearon): JJ, TT, 99, 88, 77, 66, AQs, AJs, ATs
+
+### BB
+- 3bet — Abrió UTG, UTG+1, LJ, HJ, CO, BTN o SB: AA, KK, QQ, JJ, TT, AKs, AQs, AJs, ATs, KQs, AKo, AQo, KQo
+- Defensa BB (call vs open): 99, 88, 77, 66, 55, 44, 33, 22, A9s, A8s, A7s, A6s, A5s, A4s, A3s, A2s, KJs, KTs, K9s, K8s, K7s, K6s, K5s, QJs, QTs, Q9s, Q8s, JTs, J9s, J8s, T9s, T8s, 98s, 97s, 87s, 86s, 76s, 75s, 65s, 64s, 54s, AJo, ATo, A9o, A8o, A7o, A6o, A5o, KJo, KTo, K9o, QJo, QTo, JTo, T9o
+- 4bet/5bet (3beteé y me 4betearon): AA, KK, QQ, AKs, AKo
 
 ## PROCESO MENTAL
 Antes de cada mano: ¿qué pasó en la mano anterior? ¿cuál es mi stack? ¿mi posición respecto del BTN? ¿dónde están los fish y los regulares?
